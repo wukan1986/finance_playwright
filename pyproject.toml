@@ -1,0 +1,29 @@
+[project]
+name = "finance-playwright"
+description = "use playwright to get finance data"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas<3.0",
+    "lxml",
+    "requests",
+    "loguru",
+    "psutil",
+    "playwright",
+    "playwright_stealth",
+]
+
+dynamic = ["version"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "finance_playwright/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["finance_playwright"]
+include-package-data = true
+
+[tool.hatch.build.targets.sdist]
+include = ["finance_playwright*"]

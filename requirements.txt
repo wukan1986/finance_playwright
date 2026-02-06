@@ -1,0 +1,7 @@
+pandas<3.0
+lxml
+requests
+loguru
+psutil
+playwright
+playwright_stealth
