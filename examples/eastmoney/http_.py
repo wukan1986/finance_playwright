@@ -1,6 +1,8 @@
 from finance_playwright.eastmoney.http_.api import bkzj, boards2, concept_board
-from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path
+from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path, get_edge_path, kill_browsers # noqa
 
+kill_browsers("msedge.exe")
+kill_browsers("chrome.exe")
 
 async def async_main():
     async with AsyncBrowser(endpoint="http://127.0.0.1:9222", executable_path=get_chrome_path(), devtools=True, user_data_dir="D:\\user_data1") as browser:

@@ -5,6 +5,7 @@ import pandas as pd
 from loguru import logger
 
 from finance_playwright.eastmoney.http_.pagination import Pagination
+from finance_playwright.eastmoney.utils import click_dialog
 
 
 async def modify_request(route, request):
@@ -41,8 +42,11 @@ async def goto_next(page, url1, url2, url3, new_columns, column_funcs, click_fun
     await page.route(url3, modify_request)
 
     P.reset()
+    await page.goto(url1)
+    # await click_dialog(page) # 好像不关，刷新一下就没了
+
     async with page.expect_response(url2) as response_info:
-        await page.goto(url1)
+        await page.reload()
     await on_response(await response_info.value)
 
     while P.has_next(max_page):

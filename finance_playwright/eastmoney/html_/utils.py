@@ -3,10 +3,10 @@ from io import StringIO
 import pandas as pd
 from loguru import logger
 
-from finance_playwright.eastmoney.utils import click_next_qtpager, click_next_pagerbox, click_first_qtpager, click_first_pagerbox
+from finance_playwright.eastmoney.utils import click_next_qtpager, click_next_pagerbox, click_dialog
 
 
-async def read_quotetable(page, max_page: int = 2, force_first: bool = True):
+async def read_quotetable(page, url1, max_page: int = 2):
     # https://quote.eastmoney.com/center/gridlist.html#boards2-90.BK0149
     # https://quote.eastmoney.com/center/gridlist.html#nobalmetal_futures
     async def _table(page):
@@ -22,8 +22,9 @@ async def read_quotetable(page, max_page: int = 2, force_first: bool = True):
 
         return df, current_page, last_page
 
-    if force_first:
-        await click_first_qtpager(page)
+    await page.goto(url1)
+    # await click_dialog(page) # 好像不关，刷新一下就没了
+    await page.reload()
 
     dfs = []
     for i in range(max_page):
@@ -38,7 +39,7 @@ async def read_quotetable(page, max_page: int = 2, force_first: bool = True):
     return pd.concat(dfs)
 
 
-async def read_dataview(page, max_page: int = 2, force_first: bool = True):
+async def read_dataview(page, url1, max_page: int = 2):
     # https://data.eastmoney.com/bkzj/BK0731.html
     # https://data.eastmoney.com/bkzj/BK0701.html
     async def _table(page):
@@ -54,8 +55,9 @@ async def read_dataview(page, max_page: int = 2, force_first: bool = True):
 
         return df, current_page, last_page
 
-    if force_first:
-        await click_first_pagerbox(page)
+    await page.goto(url1)
+    # await click_dialog(page) # 好像不关，刷新一下就没了
+    await page.reload()
 
     dfs = []
     for i in range(max_page):

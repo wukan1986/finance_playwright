@@ -21,3 +21,13 @@ async def click_next_pagerbox(page):
 async def click_first_pagerbox(page):
     if await page.locator('div.pagerbox').count() > 0:
         await page.locator('div.pagerbox a:not(:text("上一页"))').first.click()
+
+
+async def click_dialog(page):
+    try:
+        close_selector = 'img[onclick*="tk_tg_zoomin"]'
+        close_button = await page.wait_for_selector(close_selector, timeout=5000)
+        await close_button.click()
+        print("检测到弹窗并已关闭。")
+    except:
+        print("弹窗未出现，正常继续。")

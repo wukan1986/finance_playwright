@@ -1,8 +1,13 @@
 import random
 
-from finance_playwright.eastmoney.html_.api import bkzj, boards2, concept_board
-from finance_playwright.playwright_helper import AsyncBrowser, get_edge_path
+from playwright_stealth import Stealth
 
+from finance_playwright.eastmoney.html_.api import bkzj, boards2, concept_board
+from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path, get_edge_path, kill_browsers # noqa
+
+
+kill_browsers("msedge.exe")
+kill_browsers("chrome.exe")
 
 async def async_main():
     PROXYS = [
@@ -14,17 +19,19 @@ async def async_main():
 
     async with AsyncBrowser(endpoint="http://127.0.0.1:9222", executable_path=get_edge_path(), devtools=False, user_data_dir="D:\\user_data2") as browser:
         context = await browser.new_context(proxy=random.choice(PROXYS))
+        await Stealth().apply_stealth_async(context)
         page = await context.new_page()
-
         df = await boards2(page, "90", "BK0701", max_page=3)
         print(df)
 
         context = await browser.new_context(proxy=random.choice(PROXYS))
+        await Stealth().apply_stealth_async(context)
         page = await context.new_page()
         df = await bkzj(page, "BK0701", max_page=3)
         print(df)
 
         context = await browser.new_context(proxy=random.choice(PROXYS))
+        await Stealth().apply_stealth_async(context)
         page = await context.new_page()
         df = await concept_board(page, max_page=3)
         print(df)
