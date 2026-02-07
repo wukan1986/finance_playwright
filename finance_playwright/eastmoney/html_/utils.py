@@ -3,15 +3,15 @@ from io import StringIO
 import pandas as pd
 from loguru import logger
 
-from finance_playwright.eastmoney.utils import click_next_qtpager, click_next_pagerbox, click_dialog
+from finance_playwright.eastmoney.utils import click_next_qtpager, click_next_pagerbox
 
 
 async def read_quotetable(page, url1, max_page: int = 2):
     # https://quote.eastmoney.com/center/gridlist.html#boards2-90.BK0149
     # https://quote.eastmoney.com/center/gridlist.html#nobalmetal_futures
     async def _table(page):
-        table_html = await page.locator('div[class=quotetable] table').inner_html()
-        df = pd.read_html(StringIO("<table>" + table_html + "</table>"))[0]
+        table_html = await page.locator('div[class=quotetable] table').evaluate("element => element.outerHTML")
+        df = pd.read_html(StringIO(table_html))[0]
 
         if await page.locator('div.qtpager').count() > 0:
             current_page = int(await page.locator('div.qtpager a.acitve').text_content())  # active
@@ -43,12 +43,12 @@ async def read_dataview(page, url1, max_page: int = 2):
     # https://data.eastmoney.com/bkzj/BK0731.html
     # https://data.eastmoney.com/bkzj/BK0701.html
     async def _table(page):
-        table_html = await page.locator('div[class=dataview-body] table').inner_html()
-        df = pd.read_html(StringIO("<table>" + table_html + "</table>"))[0]
+        table_html = await page.locator('div[class=dataview-body] table').evaluate("element => element.outerHTML")
+        df = pd.read_html(StringIO(table_html))[0]
 
         if await page.locator('div.pagerbox').count() > 0:
             current_page = int(await page.locator('div.pagerbox a.active').text_content())
-            last_page = int(await page.locator('div.pagerbox a:not(:text("下一页"))').last.text_content())
+            last_page = int(await page.locator('div.pagerbox a:not(:text-is("下一页"))').last.text_content())
         else:
             current_page = 1
             last_page = 1

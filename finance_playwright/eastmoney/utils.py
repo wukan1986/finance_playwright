@@ -3,10 +3,12 @@
 
 翻页，第一页
 """
+import re
 
 
 async def click_next_qtpager(page):
-    await page.locator('div.qtpager a[title="下一页"]').click()
+    if await page.locator('div.qtpager').count() > 0:
+        await page.locator('div.qtpager').get_by_title("下一页", exact=True).click()
 
 
 async def click_first_qtpager(page):
@@ -15,12 +17,13 @@ async def click_first_qtpager(page):
 
 
 async def click_next_pagerbox(page):
-    await page.locator('div.pagerbox a:text("下一页")').click()
+    if await page.locator('div.pagerbox').count() > 0:
+        await page.locator("div.pagerbox").get_by_text("下一页", exact=True).click()
 
 
 async def click_first_pagerbox(page):
     if await page.locator('div.pagerbox').count() > 0:
-        await page.locator('div.pagerbox a:not(:text("上一页"))').first.click()
+        await page.locator("div.pagerbox").get_by_role("link", name="1", exact=True).click()
 
 
 async def click_dialog(page):
