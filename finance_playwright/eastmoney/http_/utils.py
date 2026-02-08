@@ -5,7 +5,6 @@ import pandas as pd
 from loguru import logger
 
 from finance_playwright.eastmoney.http_.pagination import Pagination
-from finance_playwright.eastmoney.utils import click_dialog
 
 
 async def modify_request(route, request):

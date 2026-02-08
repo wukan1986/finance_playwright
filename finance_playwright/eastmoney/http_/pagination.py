@@ -17,8 +17,8 @@ def replace_hyphens(obj):
 class Pagination:
     def __init__(self):
         self.datas = {}
-        self.pageNo = 1
-        self.pageSize = 100
+        self.page_no = 1
+        self.page_size = 100
         self.total = 1024
         self.columns = []
         self.datas = {}
@@ -26,20 +26,20 @@ class Pagination:
     def reset(self) -> None:
         self.datas = {}
 
-    def update(self, pageNo, pageSize, total, columns, dataList) -> None:
-        self.pageNo = pageNo
-        self.pageSize = pageSize
+    def update(self, page_no, page_size, total, columns, dataList) -> None:
+        self.page_no = page_no
+        self.page_size = page_size
         self.total = total
         self.columns = columns
-        self.datas[self.pageNo] = dataList
+        self.datas[self.page_no] = dataList
 
     def has_next(self, max_page) -> bool:
-        c1 = self.pageNo * self.pageSize < self.total
-        c2 = self.pageNo < max_page
+        c1 = self.page_no * self.page_size < self.total
+        c2 = self.page_no < max_page
         return c1 & c2
 
     def current(self) -> int:
-        return self.pageNo
+        return self.page_no
 
     def get_list(self) -> List:
         datas = []

@@ -1,4 +1,4 @@
-def repl_sync(f_globals, f_locals):
+def repl_sync(f_globals, f_locals, quit_on_enter: bool):
     """同步版交互
 
     Examples
@@ -8,10 +8,13 @@ def repl_sync(f_globals, f_locals):
     """
     while True:
         txt = input("IN>")
-        if txt == "quit":
-            break
         if txt == "":
-            continue
+            if quit_on_enter:
+                break
+            else:
+                continue
+        if txt in ("quit", ":q"):
+            break
 
         try:
             print("OUT:", eval(txt, f_globals, f_locals))
@@ -21,7 +24,7 @@ def repl_sync(f_globals, f_locals):
     return f_globals, f_locals
 
 
-async def repl_async(f_globals, f_locals):
+async def repl_async(f_globals, f_locals, quit_on_enter: bool):
     """异步版交互
 
     Examples
@@ -31,10 +34,13 @@ async def repl_async(f_globals, f_locals):
     """
     while True:
         txt = input("IN>")
-        if txt == "quit":
-            break
         if txt == "":
-            continue
+            if quit_on_enter:
+                break
+            else:
+                continue
+        if txt in ("quit", ":q"):
+            break
 
         func_code = f"""
 async def __inner_function__(f_globals, f_locals):
