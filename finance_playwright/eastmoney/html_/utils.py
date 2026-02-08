@@ -3,7 +3,7 @@ import random
 from loguru import logger
 
 from finance_playwright.eastmoney.html_.pagination import Pagination
-from finance_playwright.utils import repl_async
+from finance_playwright.utils import repl_async  # noqa
 
 
 async def route_checkuser(route):
@@ -27,10 +27,11 @@ async def check_valid(page):
         duration = 1500  # 持续时间，单位为毫秒
         frequency = 700  # 频率，单位为赫兹
         winsound.Beep(frequency, duration)
-
+        # TODO 编辑此处，进行自动操作
         await page.frame_locator('iframe.popwscps_d_iframe').locator('a.em_refresh_button').highlight()
-        await repl_async(globals(), locals(), quit_on_enter=True)
-        await page.wait_for_selector("div.popwscps_d", state="hidden", timeout=10000)
+        # TODO 开启交互功能
+        # await repl_async(globals(), locals(), quit_on_enter=True)
+        await page.wait_for_selector("div.popwscps_d", state="detached", timeout=0)
         return True
     else:
         return False
@@ -40,7 +41,7 @@ async def check_ad(page):
     if (await page.locator('img.wztctg').count()) > 0:
         logger.info("发现弹出广告")
         await page.locator('img[onclick="tk_tg_zoomin()"]').click()
-        await page.wait_for_selector("img.wztctg", state="hidden", timeout=10000)
+        await page.wait_for_selector("img.wztctg", state="detached", timeout=0)
         return True
     else:
         return False
@@ -61,13 +62,13 @@ async def goto_next(page, url1, func_read, func_goto, max_page: int = 2):
         p.update2(current_page, last_page)
         if await check_valid(page):
             n = p.next(max_page)
-            logger.info("有验证，当前页:{}, 翻页到:{}", p.current(), n)
+            logger.info("有验证，跳过当前页:{}, 翻页到:{}", p.current(), n)
         else:
             if not df.empty:
                 logger.info("更新数据,{}", current_page)
                 p.update3(current_page, last_page, df)
             n = p.next(max_page)
-            logger.info("无验证，当前页:{}, 翻页到:{}", p.current(), n)
+            logger.info("无验证，有效当前页:{}, 翻页到:{}", p.current(), n)
 
         if n == 1 or n == p.current():
             await page.reload()
