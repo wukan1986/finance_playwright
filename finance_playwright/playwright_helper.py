@@ -97,7 +97,7 @@ def start_browser(browser_path: str, port: int, devtools: bool, user_data_dir: s
 
 def is_local_url(url: str) -> bool:
     """判断url是否是本地地址"""
-    for local in ('localhost', '127.0.0.1', "::1"):
+    for local in ('localhost', '127.0.0.1', "[::1]"):
         if local in url.lower():
             return True
     return False
