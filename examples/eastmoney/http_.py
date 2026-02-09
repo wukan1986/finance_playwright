@@ -1,13 +1,27 @@
-from finance_playwright.eastmoney.http_.api import bkzj, boards2, concept_board
-from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path, get_edge_path, kill_browsers # noqa
+import random
 
-kill_browsers("msedge.exe")
-kill_browsers("chrome.exe")
+from fake_useragent import UserAgent
+
+from finance_playwright.eastmoney.http_.api import bkzj, boards2, concept_board
+from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path, get_edge_path, kill_browsers  # noqa
+
+
+# kill_browsers("msedge.exe")
+# kill_browsers("chrome.exe")
 
 async def async_main():
-    async with AsyncBrowser(endpoint="http://127.0.0.1:9222", executable_path=get_chrome_path(), devtools=True, user_data_dir="D:\\user_data1") as browser:
-        # context = await browser.new_context(proxy={"server": "http://127.0.0.1:10808"})
-        page = await browser.get_page()
+    PROXYS = [
+        None,
+        {"server": "http://127.0.0.1:10808"},
+        {"server": "http://localhost:10808"},
+        # {"server": "http://[::1]:10808"},
+    ]
+    ua = UserAgent(browsers=['Edge', 'Chrome'])
+
+    async with AsyncBrowser(endpoint="http://127.0.0.1:9222", executable_path=get_edge_path(), devtools=True, user_data_dir="D:\\user_data2") as browser:
+        context = await browser.new_context(proxy=random.choice(PROXYS), user_agent=ua.random)
+        page = await context.new_page()
+        # page = await browser.get_page()
 
         df = await boards2(page, "90", "BK0701", max_page=3)
         print(df)
