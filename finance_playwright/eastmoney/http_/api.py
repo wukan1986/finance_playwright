@@ -8,32 +8,12 @@
 破解麻烦，工作量大
 
 """
-from functools import lru_cache
 
 import pandas as pd
-import requests
 
 from finance_playwright.eastmoney.http_ import column_name, column_func
 from finance_playwright.eastmoney.http_.utils import goto_next
-from finance_playwright.eastmoney.utils import click_next_qtpager, click_next_pagerbox
-
-
-@lru_cache
-def get_bk_list() -> pd.DataFrame:
-    """获取板块名和代码的对应清单
-
-    访问地址：https://quote.eastmoney.com/center/hsbk.html
-
-    Returns
-    -------
-    pd.DataFrame
-
-    """
-    URL = "https://quote.eastmoney.com/center/api/sidemenu_new.json"
-    response = requests.get(URL)
-    json_obj = response.json()
-    df = pd.DataFrame.from_records(json_obj['bklist'])
-    return df
+from finance_playwright.eastmoney.utils import click_goto_qtpager, click_goto_pagerbox
 
 
 async def boards2(page, market: str = "90", code: str = "BK0732", max_page: int = 2) -> pd.DataFrame:
@@ -42,7 +22,7 @@ async def boards2(page, market: str = "90", code: str = "BK0732", max_page: int 
     URL2 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=100&*"
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=20&*"
 
-    return await goto_next(page, URL1.format(market=market, code=code), URL2, URL3, column_name.bkchild, column_func.bkchild, click_next_qtpager, max_page=max_page)
+    return await goto_next(page, URL1.format(market=market, code=code), URL2, URL3, column_name.bkchild, column_func.bkchild, click_goto_qtpager, max_page=max_page)
 
 
 async def concept_board(page, max_page: int = 2) -> pd.DataFrame:
@@ -51,7 +31,7 @@ async def concept_board(page, max_page: int = 2) -> pd.DataFrame:
     URL2 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=100&*"
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=20&*"
 
-    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_next_qtpager, max_page=max_page)
+    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_goto_qtpager, max_page=max_page)
 
 
 async def region_board(page, max_page: int = 2) -> pd.DataFrame:
@@ -60,7 +40,7 @@ async def region_board(page, max_page: int = 2) -> pd.DataFrame:
     URL2 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=100&*"
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=20&*"
 
-    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_next_qtpager, max_page=max_page)
+    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_goto_qtpager, max_page=max_page)
 
 
 async def industry_board(page, max_page: int = 2) -> pd.DataFrame:
@@ -69,7 +49,7 @@ async def industry_board(page, max_page: int = 2) -> pd.DataFrame:
     URL2 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=100&*"
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=20&*"
 
-    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_next_qtpager, max_page=max_page)
+    return await goto_next(page, URL1, URL2, URL3, column_name.bk_common, column_func.bk_common, click_goto_qtpager, max_page=max_page)
 
 
 async def bkzj(page, code: str = "BK0732", max_page: int = 2) -> pd.DataFrame:
@@ -78,9 +58,4 @@ async def bkzj(page, code: str = "BK0732", max_page: int = 2) -> pd.DataFrame:
     URL2 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=100&*"
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=50&*"
 
-    return await goto_next(page, URL1.format(code=code), URL2, URL3, column_name.BoardsCaptialFlow, column_func.BoardsCaptialFlow, click_next_pagerbox, max_page=max_page)
-
-
-if __name__ == "__main__":
-    df = get_bk_list()
-    print(df)
+    return await goto_next(page, URL1.format(code=code), URL2, URL3, column_name.BoardsCaptialFlow, column_func.BoardsCaptialFlow, click_goto_pagerbox, max_page=max_page)

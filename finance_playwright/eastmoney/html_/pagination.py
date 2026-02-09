@@ -3,7 +3,7 @@
 
 保证能中断后还能恢复下载
 """
-import random
+
 from typing import List
 
 import pandas as pd
@@ -18,15 +18,13 @@ class Pagination:
         self.datas = {}
         self.idx = 0
 
-    def reset(self) -> None:
-        self.datas = {}
-
     def update2(self, page_no, page_last):
         self.page_no = page_no
         self.page_last = page_last
         self.idx = page_no
 
     def update3(self, page_no, page_last, df):
+        # 数据中带了最大页码，没有总数，没有每页大小
         self.page_no = page_no
         self.page_last = page_last
         self.idx = page_no
@@ -61,6 +59,8 @@ class Pagination:
 
 
 if __name__ == "__main__":
+    import random
+
     a = random.sample(range(1, 6), 5)
     p = Pagination()
     for i in range(5):

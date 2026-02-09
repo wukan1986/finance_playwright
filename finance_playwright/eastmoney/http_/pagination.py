@@ -1,3 +1,5 @@
+import itertools
+import math
 from typing import Dict, List
 
 import pandas as pd
@@ -7,7 +9,7 @@ def replace_hyphens(obj):
     """递归处理嵌套结构中的 '-'"""
     if isinstance(obj, dict):
         return {k: replace_hyphens(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
+    elif isinstance(obj, (list, itertools.chain)):
         return [replace_hyphens(item) for item in obj]
     elif obj == '-':
         return float('nan')
@@ -18,37 +20,56 @@ class Pagination:
     def __init__(self):
         self.datas = {}
         self.page_no = 1
-        self.page_size = 100
+        self.page_last = 100
+        self.page_size = 50
         self.total = 1024
         self.columns = []
         self.datas = {}
+        self.idx = 0
 
     def reset(self) -> None:
         self.datas = {}
 
-    def update(self, page_no, page_size, total, columns, dataList) -> None:
+    def update1(self, idx):
+        self.idx = idx
+
+    def update5(self, page_no, page_size, total, columns, data) -> None:
+        # 数据中有当前页码，每页大小，总数
         self.page_no = page_no
         self.page_size = page_size
+        self.page_last = math.ceil(self.total / self.page_size)
+        self.idx = page_no
         self.total = total
         self.columns = columns
-        self.datas[self.page_no] = dataList
+        self.datas[self.page_no] = data
 
-    def has_next(self, max_page) -> bool:
-        c1 = self.page_no * self.page_size < self.total
-        c2 = self.page_no < max_page
-        return c1 & c2
+    def next(self, max_page) -> int:
+        # 默认第一页都要记录，所以长度就是页数
+        max_page = min(max_page, self.page_last)
+        if len(self.datas) >= max_page:
+            return -1
+
+        for i in range(max_page):
+            self.idx %= max_page
+            self.idx += 1
+            if self.idx not in self.datas:
+                return self.idx
+
+        return -1
 
     def current(self) -> int:
         return self.page_no
 
     def get_list(self) -> List:
+        self.datas = dict(sorted(self.datas.items()))
         datas = []
         for k, v in self.datas.items():
-            datas.extend(v)
+            datas.append(v)
         return datas
 
     def get_dataframe(self, column_name: Dict | None, column_func: Dict | None) -> pd.DataFrame:
-        df = pd.DataFrame(replace_hyphens(self.get_list()))
+        datas = replace_hyphens(itertools.chain.from_iterable(self.get_list()))
+        df = pd.DataFrame(datas)
 
         specified_order = self.columns
         # 获取指定顺序的列（只保留存在的列）
@@ -65,3 +86,18 @@ class Pagination:
                     df[col_name] = func(df[col_name])
 
         return df
+
+
+if __name__ == "__main__":
+    import random
+
+    a = random.sample(range(1, 6), 5)
+    p = Pagination()
+    for i in range(5):
+        print(p.datas.keys())
+        print(p.next(5))
+        p.update5(a[i], 5, 100, [], pd.DataFrame([a[i]]))
+        print(p.datas.keys())
+
+    print(p.get_list())
+    print(p.datas.keys())

@@ -3,8 +3,10 @@ from urllib.parse import urlparse, parse_qs
 
 import pandas as pd
 from loguru import logger
+from playwright.sync_api import TimeoutError
 
 from finance_playwright.eastmoney.http_.pagination import Pagination
+from finance_playwright.eastmoney.utils import check_ad, check_valid
 
 
 async def modify_request(route, request):
@@ -19,8 +21,11 @@ async def modify_request(route, request):
         await route.continue_()
 
 
-async def goto_next(page, url1, url2, url3, new_columns, column_funcs, click_func, max_page: int = 100) -> pd.DataFrame:
-    P = Pagination()
+async def goto_next(page, url1, url2, url3, new_columns, column_funcs, goto_func, max_page: int = 100) -> pd.DataFrame:
+    # TODO 强行开启验证码弹出
+    # await page.route("https://i.eastmoney.com/websitecaptcha/api/checkuser?callback=wsc_checkuser", route_checkuser)
+
+    p = Pagination()
 
     async def on_response(response):
         url = response.url
@@ -35,28 +40,34 @@ async def goto_next(page, url1, url2, url3, new_columns, column_funcs, click_fun
         data = json.loads(json_str)
         total = data['data']['total']
         diff = data['data']['diff']
-        print(total, pn, pz, len(diff), url)
-        P.update(pn, pz, total, fields, diff)
+        logger.info("更新数据，当前页:{}, 每页大小:{}，总数:{}, {}", pn, pz, total, url)
+        p.update5(pn, pz, total, fields, diff)
 
-    await page.route(url3, modify_request)
+    if url2 != url3:
+        await page.route(url3, modify_request)
 
-    P.reset()
-    await page.goto(url1)
-    # await click_dialog(page) # 好像不关，刷新一下就没了
+    p = Pagination()
+    n = 1
+    while n > 0:
+        try:
+            async with page.expect_response(url2, timeout=10000) as response_info:
+                p.update1(n)
+                if n == 1:
+                    logger.info(url1)
+                    await page.goto(url1)
+                else:
+                    if p.current() == n:
+                        logger.info("当前页:{}, 翻页到:{}", p.current(), n)
+                        await page.reload()
+                    else:
+                        logger.info("当前页:{}, 翻页到:{}", p.current(), n)
+                        await goto_func(page, n)
+            await on_response(await response_info.value)
+        except TimeoutError as e:
+            print(f"超时错误: {e}")
+        if n == 1:
+            await check_ad(page)
+        await check_valid(page)
+        n = p.next(max_page)
 
-    async with page.expect_response(url2) as response_info:
-        await page.reload()
-    await on_response(await response_info.value)
-
-    while P.has_next(max_page):
-        logger.info("当前页为:{}, 点击`下一页`", P.current())
-
-        async with page.expect_response(url2) as response_info:
-            await click_func(page)
-        await on_response(await response_info.value)
-
-    # import pickle
-    # with open('1.pkl', 'wb') as f:
-    #     pickle.dump(P.get_list(), f)
-
-    return P.get_dataframe(new_columns, column_funcs)
+    return p.get_dataframe(new_columns, column_funcs)
