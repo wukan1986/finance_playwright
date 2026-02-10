@@ -1,6 +1,8 @@
 import logging
+import pathlib
 import random
 
+import pandas as pd
 from loguru import logger
 from playwright_stealth import Stealth
 from tenacity import retry, stop_after_attempt, wait_random, before_sleep_log
@@ -67,12 +69,17 @@ async def __inner_function__(f_globals, f_locals):
 
 @retry(stop=stop_after_attempt(3), wait=wait_random(10, 20), before_sleep=before_sleep_log(logger, logging.DEBUG))
 async def browser_retry(browser, proxys, ua, func, *arg, **kwargs):
+    path = "_".join([func.__name__, *arg]) + ".parquet"
+    path = pathlib.Path(path)
+    if path.exists():
+        return
+
     proxy = random.choice(proxys)
     user_agent = ua.random
     print(proxy, user_agent)
     context = await browser.new_context(proxy=proxy, user_agent=user_agent)
     await Stealth().apply_stealth_async(context)
     page = await context.new_page()
-    df = await func(page, *arg, **kwargs)
-    # TODO 这里可以保存一下
-    print(df)
+    df: pd.DataFrame = await func(page, *arg, **kwargs)
+    df.to_parquet(path, compression="zstd")
+    print(df.tail(5))

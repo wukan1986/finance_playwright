@@ -9,7 +9,7 @@ from finance_playwright.pagination import Pagination
 async def goto_next(page, url1, func_read, func_goto, max_page: int = 2):
     # TODO 强行开启验证码弹出
     # await page.route("https://i.eastmoney.com/websitecaptcha/api/checkuser?callback=wsc_checkuser", route_checkuser)
-    path = hashlib.md5(url1.encode("utf-8")).hexdigest()
+    path = hashlib.md5(url1.encode("utf-8")).hexdigest() + '.pkl'
 
     p = Pagination(path)
     p.load()

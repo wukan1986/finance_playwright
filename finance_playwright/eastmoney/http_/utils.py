@@ -25,7 +25,7 @@ async def modify_request(route, request):
 async def goto_next(page, url1: str, url2: str, url3: str, new_columns, column_funcs, goto_func, max_page: int = 100) -> pd.DataFrame:
     # TODO 强行开启验证码弹出
     # await page.route("https://i.eastmoney.com/websitecaptcha/api/checkuser?callback=wsc_checkuser", route_checkuser)
-    path = hashlib.md5(url1.encode("utf-8")).hexdigest()
+    path = hashlib.md5(url1.encode("utf-8")).hexdigest() + '.pkl'
 
     p = Pagination(path)
     p.load()
