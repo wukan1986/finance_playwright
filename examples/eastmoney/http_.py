@@ -1,6 +1,6 @@
 from fake_useragent import UserAgent
 
-from finance_playwright.eastmoney.http_.api import bkzj, boards2, concept_board
+from finance_playwright.eastmoney.http_.api import bkzj, boards2, concept_board, cjsj_cpi, cjsj_foreign_0_2
 from finance_playwright.playwright_helper import AsyncBrowser, get_chrome_path, get_edge_path, kill_browsers  # noqa
 from finance_playwright.utils import browser_retry
 
@@ -21,6 +21,8 @@ async def main():
         await browser_retry(browser, PROXYS, ua, boards2, "90", "BK0701", max_page=3)
         await browser_retry(browser, PROXYS, ua, bkzj, "BK0701", max_page=3)
         await browser_retry(browser, PROXYS, ua, concept_board, max_page=3)
+        await browser_retry(browser, PROXYS, ua, cjsj_cpi)
+        await browser_retry(browser, PROXYS, ua, cjsj_foreign_0_2)
 
         input("done")
 

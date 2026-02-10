@@ -79,3 +79,30 @@ async def goto_next(page, url1: str, url2: str, url3: str, new_columns, column_f
         n = p.next(max_page)
 
     return p.get_dataframe(new_columns, column_funcs, delete=True)
+
+
+async def goto_one(page, url1: str, url2: str) -> pd.DataFrame:
+    path = hashlib.md5(url1.encode("utf-8")).hexdigest() + '.pkl'
+
+    p = Pagination(path)
+    p.load()
+
+    async def on_response(response):
+        url = response.url
+
+        text = await response.text()
+        json_str = text[text.find('(') + 1:text.rfind(')')]
+        d = json.loads(json_str)
+        count = d['result']['count']
+        pages = d['result']['pages']
+        data = d['result']['data']
+        logger.info("更新数据，总数:{}, {}", count, url)
+        p.update5(1, 10000, count, [], data)
+
+    async with page.expect_response(url2, timeout=10000) as response_info:
+        logger.info(url1)
+        await page.goto(url1)
+    await on_response(await response_info.value)
+    await check_ad(page)
+
+    return p.get_dataframe(None, None, delete=True)

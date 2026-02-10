@@ -12,7 +12,7 @@
 import pandas as pd
 
 from finance_playwright.eastmoney.http_ import column_name, column_func
-from finance_playwright.eastmoney.http_.utils import goto_next
+from finance_playwright.eastmoney.http_.utils import goto_next, goto_one
 from finance_playwright.eastmoney.utils import click_goto_qtpager, click_goto_pagerbox
 
 
@@ -59,3 +59,31 @@ async def bkzj(page, code: str = "BK0732", max_page: int = 2) -> pd.DataFrame:
     URL3 = "https://push2.eastmoney.com/api/qt/clist/get?*&pz=50&*"
 
     return await goto_next(page, URL1.format(code=code), URL2, URL3, column_name.BoardsCaptialFlow, column_func.BoardsCaptialFlow, click_goto_pagerbox, max_page=max_page)
+
+
+async def cjsj_cpi(page):
+    """中国 居民消费价格指数(CPI，上年同月=100)
+
+    财经数据_CPI
+    """
+    URL1 = "https://data.eastmoney.com/cjsj/cpi.html"
+    URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*&reportName=RPT_ECONOMY_CPI&*"
+    return await goto_one(page, URL1, URL2)
+
+async def cjsj_ppi(page):
+    """中国 工业品出厂价格指数(PPI)"""
+    URL1 = "https://data.eastmoney.com/cjsj/ppi.html"
+    URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
+    return await goto_one(page, URL1, URL2)
+
+async def cjsj_gdp(page):
+    """中国 国内生产总值(GDP)"""
+    URL1 = "https://data.eastmoney.com/cjsj/gdp.html"
+    URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
+    return await goto_one(page, URL1, URL2)
+
+async def cjsj_foreign_0_2(page):
+    """美国 非农就业人数变化"""
+    URL1 = "https://data.eastmoney.com/cjsj/foreign_0_2.html"
+    URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
+    return await goto_one(page, URL1, URL2)
