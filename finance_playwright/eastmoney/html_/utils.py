@@ -1,14 +1,18 @@
+import hashlib
+
 from loguru import logger
 
-from finance_playwright.eastmoney.html_.pagination import Pagination
 from finance_playwright.eastmoney.utils import check_ad, check_valid, route_checkuser  # noqa
+from finance_playwright.pagination import Pagination
 
 
 async def goto_next(page, url1, func_read, func_goto, max_page: int = 2):
     # TODO 强行开启验证码弹出
     # await page.route("https://i.eastmoney.com/websitecaptcha/api/checkuser?callback=wsc_checkuser", route_checkuser)
+    path = hashlib.md5(url1.encode("utf-8")).hexdigest()
 
-    p = Pagination()
+    p = Pagination(path)
+    p.load()
     n = 1
     while n > 0:
         if n == 1:
@@ -36,4 +40,4 @@ async def goto_next(page, url1, func_read, func_goto, max_page: int = 2):
             await func_goto(page, n)
             continue
 
-    return p.get_dataframe()
+    return p.get_dataframe(None, None, delete=True)

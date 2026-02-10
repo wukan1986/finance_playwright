@@ -12,6 +12,7 @@ dependencies = [
     "playwright",
     "playwright_stealth",
     "fake-useragent",
+    "tenacity",
 ]
 
 dynamic = ["version"]

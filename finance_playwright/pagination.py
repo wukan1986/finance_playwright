@@ -1,5 +1,7 @@
 import itertools
 import math
+import pathlib
+import pickle
 from typing import Dict, List
 
 import pandas as pd
@@ -17,7 +19,8 @@ def replace_hyphens(obj):
 
 
 class Pagination:
-    def __init__(self):
+    def __init__(self, path: str) -> None:
+        self.path = pathlib.Path(path)
         self.datas = {}
         self.page_no = 1
         self.page_last = 100
@@ -27,13 +30,21 @@ class Pagination:
         self.datas = {}
         self.idx = 0
 
-    def reset(self) -> None:
-        self.datas = {}
-
-    def update1(self, idx):
+    def update1(self, idx: int) -> None:
         self.idx = idx
 
-    def update5(self, page_no, page_size, total, columns, data) -> None:
+    def update2(self, page_no, page_last):
+        self.page_no = page_no
+        self.page_last = page_last
+        self.idx = page_no
+
+    def update3(self, page_no, page_last, df):
+        self.page_no = page_no
+        self.page_last = page_last
+        self.idx = page_no
+        self.datas[self.page_no] = df
+
+    def update5(self, page_no: int, page_size: int, total: int, columns, data) -> None:
         # 数据中有当前页码，每页大小，总数
         self.page_no = page_no
         self.page_size = page_size
@@ -43,7 +54,7 @@ class Pagination:
         self.columns = columns
         self.datas[self.page_no] = data
 
-    def next(self, max_page) -> int:
+    def next(self, max_page: int) -> int:
         # 默认第一页都要记录，所以长度就是页数
         max_page = min(max_page, self.page_last)
         if len(self.datas) >= max_page:
@@ -67,16 +78,19 @@ class Pagination:
             datas.append(v)
         return datas
 
-    def get_dataframe(self, column_name: Dict | None, column_func: Dict | None) -> pd.DataFrame:
-        datas = replace_hyphens(itertools.chain.from_iterable(self.get_list()))
-        df = pd.DataFrame(datas)
+    def get_dataframe(self, column_name: Dict | None, column_func: Dict | None, delete: bool = False) -> pd.DataFrame:
+        datas = self.get_list()
+        if isinstance(datas[0], pd.DataFrame):
+            df = pd.concat(self.get_list())
+        else:
+            datas = replace_hyphens(itertools.chain.from_iterable(datas))
+            df = pd.DataFrame(datas)
 
-        specified_order = self.columns
-        # 获取指定顺序的列（只保留存在的列）
-        ordered_cols = [col for col in specified_order if col in df.columns]
-        # 获取未指定的列（保持原有顺序）
-        remaining_cols = [col for col in df.columns if col not in specified_order]
-        df = df.loc[:, ordered_cols + remaining_cols]
+        if self.columns:
+            specified_order = self.columns
+            ordered_cols = [col for col in specified_order if col in df.columns]
+            remaining_cols = [col for col in df.columns if col not in specified_order]
+            df = df.loc[:, ordered_cols + remaining_cols]
 
         if column_name:
             df = df.rename(columns=column_name)
@@ -85,7 +99,19 @@ class Pagination:
                 if col_name in df.columns:
                     df[col_name] = func(df[col_name])
 
+        if delete:
+            self.path.unlink(missing_ok=True)
+
         return df
+
+    def save(self) -> None:
+        with self.path.open("wb") as f:
+            pickle.dump(self.datas, f)
+
+    def load(self) -> None:
+        if self.path.exists():
+            with self.path.open("rb") as f:
+                self.datas = pickle.load(f)
 
 
 if __name__ == "__main__":

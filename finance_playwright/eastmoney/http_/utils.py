@@ -1,3 +1,4 @@
+import hashlib
 import json
 from urllib.parse import urlparse, parse_qs
 
@@ -5,8 +6,8 @@ import pandas as pd
 from loguru import logger
 from playwright.sync_api import TimeoutError
 
-from finance_playwright.eastmoney.http_.pagination import Pagination
-from finance_playwright.eastmoney.utils import check_ad, check_valid
+from finance_playwright.eastmoney.utils import check_ad, check_valid, check_loading
+from finance_playwright.pagination import Pagination
 
 
 async def modify_request(route, request):
@@ -21,11 +22,13 @@ async def modify_request(route, request):
         await route.continue_()
 
 
-async def goto_next(page, url1, url2, url3, new_columns, column_funcs, goto_func, max_page: int = 100) -> pd.DataFrame:
+async def goto_next(page, url1: str, url2: str, url3: str, new_columns, column_funcs, goto_func, max_page: int = 100) -> pd.DataFrame:
     # TODO 强行开启验证码弹出
     # await page.route("https://i.eastmoney.com/websitecaptcha/api/checkuser?callback=wsc_checkuser", route_checkuser)
+    path = hashlib.md5(url1.encode("utf-8")).hexdigest()
 
-    p = Pagination()
+    p = Pagination(path)
+    p.load()
 
     async def on_response(response):
         url = response.url
@@ -46,7 +49,6 @@ async def goto_next(page, url1, url2, url3, new_columns, column_funcs, goto_func
     if url2 != url3:
         await page.route(url3, modify_request)
 
-    p = Pagination()
     n = 1
     while n > 0:
         try:
@@ -60,14 +62,20 @@ async def goto_next(page, url1, url2, url3, new_columns, column_funcs, goto_func
                         logger.info("当前页:{}, 翻页到:{}", p.current(), n)
                         await page.reload()
                     else:
+                        # 有可能刷要翻页时一直loading
                         logger.info("当前页:{}, 翻页到:{}", p.current(), n)
+                        # await repl_async(globals(), locals(), quit_on_enter=True)
                         await goto_func(page, n)
             await on_response(await response_info.value)
         except TimeoutError as e:
             print(f"超时错误: {e}")
+            if await check_loading(page):
+                logger.info("发现数据加载时间过长，新建context")
+                p.save()
+                raise
         if n == 1:
             await check_ad(page)
         await check_valid(page)
         n = p.next(max_page)
 
-    return p.get_dataframe(new_columns, column_funcs)
+    return p.get_dataframe(new_columns, column_funcs, delete=True)

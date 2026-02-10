@@ -108,6 +108,10 @@ async def check_valid(page):
         return False
 
 
+async def check_loading(page) -> bool:
+    return await page.locator("div[class=dataview-loading]").is_visible()
+
+
 async def check_ad(page):
     if (await page.locator('img.wztctg').count()) > 0:
         logger.info("发现弹出广告")
