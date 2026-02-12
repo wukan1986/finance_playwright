@@ -70,11 +70,13 @@ async def cjsj_cpi(page):
     URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*&reportName=RPT_ECONOMY_CPI&*"
     return await goto_one(page, URL1, URL2)
 
+
 async def cjsj_ppi(page):
     """中国 工业品出厂价格指数(PPI)"""
     URL1 = "https://data.eastmoney.com/cjsj/ppi.html"
     URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
     return await goto_one(page, URL1, URL2)
+
 
 async def cjsj_gdp(page):
     """中国 国内生产总值(GDP)"""
@@ -82,8 +84,32 @@ async def cjsj_gdp(page):
     URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
     return await goto_one(page, URL1, URL2)
 
+
 async def cjsj_foreign_0_2(page):
-    """美国 非农就业人数变化"""
+    """美国 非农就业人数变化
+
+    Notes
+    -----
+    数据发布时间有误
+
+    例如：2026年2月11日发布的数据，但显示的2026年2月6日。但从Choice终端上查询又是正确的
+
+    """
     URL1 = "https://data.eastmoney.com/cjsj/foreign_0_2.html"
+    URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
+    return await goto_one(page, URL1, URL2)
+
+
+async def cjsj_foreign_0_4(page):
+    """美国 失业率
+
+    Notes
+    -----
+    数据发布时间有误
+
+    例如：2026年2月11日发布的数据，但显示的2026年2月6日。但从Choice终端上查询又是正确的
+
+    """
+    URL1 = "https://data.eastmoney.com/cjsj/foreign_0_4.html"
     URL2 = "https://datacenter-web.eastmoney.com/api/data/v1/get?callback=jQuery*"
     return await goto_one(page, URL1, URL2)
